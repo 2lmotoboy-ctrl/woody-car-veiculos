@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Woody Car — Venda de Veículos</title>
+<style>
+:root{
+  --bg:#0b0b0b;
+  --card:#0f0f10;
+  --accent:#ffd400;
+  --muted:#bdbdbd;
+  --glass: rgba(255,255,255,0.03);
+}
+*{box-sizing:border-box;font-family:Inter, system-ui, Arial, sans-serif;}
+body{margin:0;background:linear-gradient(180deg,#070707 0%, #0d0d0d 100%);color:#fff;min-height:100vh;}
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg);position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,0.03);}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo .mark{width:44px;height:44px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:800;}
+.logo h1{margin:0;font-size:18px;letter-spacing:0.2px;}
+.search{flex:1;max-width:720px;margin:0 20px;display:flex;gap:8px;}
+.search input{flex:1;padding:10px 12px;border-radius:8px;border:0;background:var(--glass);color:#fff;}
+.btn{background:var(--accent);color:#000;padding:10px 14px;border-radius:8px;border:0;font-weight:700;cursor:pointer;}
+.btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(255,212,0,0.12);}
+.topbar-actions{display:flex;gap:10px;align-items:center;}
+
+/* mobile hamburger */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;margin-left:8px}
+.hamburger div{width:26px;height:3px;background:white;border-radius:4px;}
+.mobile-menu{display:none;flex-direction:column;background:var(--bg);padding:12px;gap:8px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.mobile-menu button{width:100%;text-align:left;}
+
+/* responsive */
+@media(max-width:760px){
+  .topbar-actions{display:none;}
+  .search{margin:0 10px;}
+  .hamburger{display:flex;}
+  .mobile-menu.active{display:flex;}
+  main{padding:12px;}
+  .sidebar{width:100%;order:2}
+  .list-wrap{order:1}
+  /* make grid single column on really small */
+  .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}
+}
+
+/* rest of styles (kept as you had) */
+main{padding:20px;display:flex;gap:20px;align-items:flex-start;}
+.sidebar{width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);}
+.filters h3{margin:0 0 10px 0;color:var(--muted);font-size:13px;}
+.filters label{display:block;font-size:14px;margin-bottom:8px;}
+.filters input, .filters select{width:100%;padding:8px;border-radius:6px;border:0;background:#0b0b0b;color:#fff;}
+.list-wrap{flex:1;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.card{background:var(--card);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:10px;position:relative;cursor:default;}
+.sold-badge{position:absolute;top:8px;left:8px;background:red;padding:4px 6px;border-radius:4px;font-size:12px;font-weight:700;z-index:10;}
+.gallery{height:160px;border-radius:8px;background:#111;display:flex;align-items:center;overflow:hidden;position:relative;}
+.gallery img{width:100%;height:100%;object-fit:cover;}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.title{font-weight:700;font-size:16px;}
+.specs{font-size:13px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;}
+.price{font-weight:900;font-size:20px;color:var(--accent);}
+.blink{animation:blink 1s linear infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding-top:6px;}
+.thumbs img{width:60px;height:40px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid rgba(255,255,255,0.03);}
+.actions{display:flex;gap:8px;}
+.whatsapp{background:#25D366;color:#000;padding:8px;border-radius:8px;border:0;font-weight:700;cursor:pointer;}
+.edit{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--muted);cursor:pointer;}
+.footer{padding:20px;text-align:center;color:var(--muted);}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:120;}
+.modal{background:#081018;padding:18px;border-radius:10px;width:100%;max-width:760px;border:1px solid rgba(255,255,255,0.04);overflow:auto;max-height:90vh;}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+input, textarea, select{background:rgba(255,255,255,0.02);border:0;color:#fff;padding:10px;border-radius:8px;width:100%;}
+label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block;}
+.small{width:calc(33.333% - 8px);}
+.half{width:calc(50% - 8px);}
+.file-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.file-list img{width:80px;height:60px;object-fit:cover;border-radius:6px;}
+.admin-panel{position:fixed;inset:0;background:rgba(6,6,6,0.95);display:none;z-index:200;overflow:auto;padding:24px;}
+.admin-inner{max-width:1100px;margin:0 auto;background:#071018;border:1px solid rgba(255,255,255,0.04);padding:18px;border-radius:10px;position:relative;}
+.admin-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;}
+.admin-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+.admin-item{display:flex;gap:12px;align-items:center;padding:10px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02);}
+.admin-thumb{width:120px;height:80px;object-fit:cover;border-radius:8px;background:#111;}
+.admin-meta{flex:1;}
+.admin-actions{display:flex;gap:8px;}
+.pass-modal{width:100%;max-width:420px;padding:18px;border-radius:10px;background:#081018;border:1px solid rgba(255,255,255,0.04);}
+.change-pass-modal{width:100%;max-width:520px;padding:18px;border-radius:10px;background:#081018;border:1px solid rgba(255,255,255,0.04);}
+.change-pass-row{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.muted-small{font-size:13px;color:var(--muted);margin-top:8px;}
+.price-style-select{margin-top:6px;}
+.reports-panel{width:100%;max-width:900px;background:#081018;padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);}
+.report-controls{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.report-summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+.report-box{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);min-width:180px;}
+.canvas-wrap{background:#071018;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-top:12px;}
+.desc-btn{background:var(--accent);color:#000;padding:8px 10px;border-radius:8px;border:0;font-weight:700;cursor:pointer;}
+.desc-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:400;background:rgba(0,0,0,0.45);}
+.desc-modal{background:rgba(0,0,0,0.85);color:#fff;padding:18px;border-radius:10px;max-width:640px;width:92%;box-shadow:0 8px 30px rgba(0,0,0,0.6);backdrop-filter: blur(4px);border:1px solid rgba(255,255,255,0.03);}
+.desc-modal h3{margin:0 0 8px 0;color:var(--accent);}
+.desc-text{white-space:pre-wrap;color:#fff;font-size:14px;line-height:1.4;opacity:0.98;}
+.desc-close{margin-top:12px;background:transparent;border:1px solid rgba(255,255,255,0.08);padding:8px 10px;border-radius:8px;color:#fff;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="mark">WC</div>
+    <div>
+      <h1>Woody Car</h1>
+      <div style="font-size:12px;color:var(--muted)">Venda de veículos</div>
+    </div>
+  </div>
+
+  <div class="search">
+    <input id="searchInput" placeholder="Buscar por marca, modelo, ano..." />
+    <button id="clearSearch" class="btn secondary">Limpar</button>
+  </div>
+
+  <div class="topbar-actions">
+    <button id="btnViewAdmin" class="btn secondary">Admin</button>
+    <button id="openCreate" class="btn">Anunciar</button>
+    <button id="findVehicleBtn" class="btn secondary">Encontramos um veículo específico</button>
+    <button id="sellVehicleBtn" class="btn secondary">Compramos seu veículo</button>
+  </div>
+
+  <!-- hamburger visible on small screens -->
+  <div class="hamburger" id="hamburger">
+    <div></div><div></div><div></div>
+  </div>
+</header>
+
+<!-- mobile menu (single source of truth) -->
+<div id="mobileMenu" class="mobile-menu" aria-hidden="true">
+  <button id="btnViewAdmin_m" class="btn secondary">Admin</button>
+  <button id="openCreate_m" class="btn">Anunciar</button>
+  <button id="findVehicleBtn_m" class="btn secondary">Encontramos um veículo específico</button>
+  <button id="sellVehicleBtn_m" class="btn secondary">Compramos seu veículo</button>
+</div>
+
+<main>
+  <aside class="sidebar">
+    <div class="filters">
+      <h3>Filtros rápidos</h3>
+      <label>Marca<input id="filterBrand" placeholder="Ex: Volkswagen" /></label>
+      <label>Ano mínimo<input id="filterYearMin" type="number" min="1900" max="2099" /></label>
+      <label>Faixa de preço<select id="filterPrice">
+        <option value="">Todos</option>
+        <option value="0-30000">Até R$30.000</option>
+        <option value="30001-80000">R$30.001 - R$80.000</option>
+        <option value="80001-120000">R$80.001 - R$120.000</option>
+        <option value="120001-9999999">Acima de R$120.000</option>
+      </select></label>
+      <div style="height:10px"></div>
+      <button id="applyFilters" class="btn secondary">Aplicar</button>
+      <button id="resetFilters" class="btn">Resetar</button>
+    </div>
+    <div style="margin-top:18px;font-size:13px;color:var(--muted)">
+      Dica: clique em um thumbnail para trocar a imagem principal do card.
+    </div>
+  </aside>
+
+  <section class="list-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:18px;font-weight:700">Anúncios</div>
+      <div style="color:var(--muted)">Total: <span id="totalCount">0</span></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<footer class="footer">Woody Car • Demo local • Dados salvos no Realtime Database</footer>
+
+<!-- ===================== MODALS & rest of HTML ===================== -->
+<!-- (I kept every modal and admin markup exactly como você enviou) -->
+
+<!-- MODAL CRIAR/EDITAR -->
+<div id="overlay" class="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div>
+        <h2 id="modalTitle" style="margin:0">Novo anúncio</h2>
+        <div style="font-size:13px;color:var(--muted)">Preencha os dados do veículo</div>
+      </div>
+      <div>
+        <button id="closeModal" class="btn secondary">Fechar</button>
+      </div>
+    </div>
+    <form id="adForm">
+      <input type="hidden" id="editingId">
+      <div class="row">
+        <label>Marca<input id="brand" required></label>
+        <label>Modelo<input id="model" required></label>
+        <label class="small">Ano<input id="year" type="number" min="1900" max="2099"></label>
+        <label class="small">KM<input id="km"></label>
+        <label class="half">Preço (R$)<input id="price" required></label>
+        <label>Descrição<textarea id="description" rows="3"></textarea></label>
+        <label>Imagens (várias)<input id="images" type="file" accept="image/*" multiple></label>
+        <div class="file-list" id="previewList"></div>
+        <label>Telefone<input id="phone" placeholder="5545999705577"></label>
+        <label class="price-style-select">Estilo do preço
+          <select id="priceStyle">
+            <option value="blink">Piscando</option>
+            <option value="static">Estático</option>
+          </select>
+        </label>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button type="submit" class="btn">Salvar anúncio</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL ENCONTRAMOS VEÍCULO -->
+<div id="overlayFindVehicle" class="overlay">
+  <div class="pass-modal">
+    <h3>Encontramos um veículo específico</h3>
+    <label>Marca<input id="findBrand"></label>
+    <label>Modelo<input id="findModel"></label>
+    <label>Ano<input id="findYear" type="number"></label>
+    <label>Detalhes<textarea id="findDetails" rows="3"></textarea></label>
+    <div style="display:flex;justify-content:flex-end;margin-top:10px">
+      <button id="sendFindVehicle" class="btn">Enviar WhatsApp</button>
+      <button id="closeFindVehicle" class="btn secondary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPRAMOS VEÍCULO -->
+<div id="overlaySellVehicle" class="overlay">
+  <div class="pass-modal">
+    <h3>Compramos seu veículo</h3>
+    <label>Marca<input id="sellBrand"></label>
+    <label>Modelo<input id="sellModel"></label>
+    <label>Ano<input id="sellYear" type="number"></label>
+    <label>KM<input id="sellKm"></label>
+    <div style="display:flex;justify-content:flex-end;margin-top:10px">
+      <button id="sendSellVehicle" class="btn">Enviar WhatsApp</button>
+      <button id="closeSellVehicle" class="btn secondary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SENHA ANUNCIAR -->
+<div id="overlayAnnouncePass" class="overlay">
+  <div class="pass-modal">
+    <h3>Senha para anunciar</h3>
+    <input id="announcePassInput" class="pass-input" type="password" placeholder="Senha">
+    <div style="display:flex;justify-content:flex-end;margin-top:10px">
+      <button id="announcePassBtn" class="btn">Entrar</button>
+      <button id="closeAnnouncePass" class="btn secondary">Fechar</button>
+    </div>
+    <div class="muted-small">Senha padrão: 951951</div>
+  </div>
+</div>
+
+<!-- MODAL SENHA ADMIN -->
+<div id="overlayPass" class="overlay">
+  <div class="pass-modal">
+    <h3>Área administrativa</h3>
+    <input id="adminPassInput" class="pass-input" type="password" placeholder="Senha administrativa">
+    <div style="display:flex;justify-content:flex-end;margin-top:10px">
+      <button id="unlockBtn" class="btn">Entrar</button>
+      <button id="closePass" class="btn secondary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAINEL ADMIN -->
+<div id="adminPanel" class="admin-panel">
+  <div class="admin-inner">
+    <div class="admin-header">
+      <div><h2 style="margin:0">Painel Administrativo</h2></div>
+      <div>
+        <button id="adminCreateBtn" class="btn">Criar novo anúncio</button>
+        <button id="adminCloseBtn" class="btn secondary">Sair do Admin</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+      <button id="openChangeAdminPass" class="btn secondary">Alterar senha administrativa</button>
+      <button id="openChangeAnnouncePass" class="btn secondary">Alterar senha para anunciar</button>
+      <button id="openReports" class="btn secondary">Relatórios</button>
+      <div style="flex:1"></div>
+      <div style="color:var(--muted);font-size:13px;">Senha Admin: <span id="currentAdminPassLabel">oculta</span></div>
+    </div>
+
+    <div id="adminChangePassModal" class="overlay" style="display:none;align-items:center;justify-content:center;">
+      <div class="change-pass-modal">
+        <h3>Alterar Senha Administrativa</h3>
+        <div class="change-pass-row">
+          <input id="oldAdminPass" type="password" placeholder="Senha atual">
+          <input id="newAdminPass" type="password" placeholder="Nova senha">
+          <input id="confirmNewAdminPass" type="password" placeholder="Confirmar nova senha">
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+          <button id="saveNewAdminPass" class="btn">Salvar</button>
+          <button id="closeChangeAdminPass" class="btn secondary">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="announceChangePassModal" class="overlay" style="display:none;align-items:center;justify-content:center;">
+      <div class="change-pass-modal">
+        <h3>Alterar Senha para Anunciar</h3>
+        <div class="change-pass-row">
+          <input id="oldAnnouncePass" type="password" placeholder="Senha atual">
+          <input id="newAnnouncePass" type="password" placeholder="Nova senha">
+          <input id="confirmNewAnnouncePass" type="password" placeholder="Confirmar nova senha">
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+          <button id="saveNewAnnouncePass" class="btn">Salvar</button>
+          <button id="closeChangeAnnouncePass" class="btn secondary">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="reportsModal" class="overlay" style="display:none;align-items:center;justify-content:center;">
+      <div class="modal" style="max-width:1000px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="margin:0">Relatórios</h3>
+          <div>
+            <button id="downloadPdfBtn" class="btn">Baixar PDF</button>
+            <button id="closeReports" class="btn secondary">Fechar</button>
+          </div>
+        </div>
+
+        <div class="reports-panel" id="reportsPanel">
+          <div class="report-controls">
+            <div>
+              <label>Período (não persistente):</label>
+              <select id="reportPeriod">
+                <option value="all">Tudo</option>
+                <option value="7">Últimos 7 dias</option>
+                <option value="30">Últimos 30 dias</option>
+              </select>
+            </div>
+            <div style="color:var(--muted);font-size:13px;">(Anúncios vendidos são excluídos do relatório)</div>
+          </div>
+
+          <div class="report-summary" id="reportSummary"></div>
+          <div class="canvas-wrap"><canvas id="reportChart" width="900" height="320"></canvas></div>
+          <div style="margin-top:12px;">
+            <h4 style="margin:0 0 8px 0">Tabela de Estatísticas</h4>
+            <div style="overflow:auto;max-height:220px;">
+              <table id="reportTable" style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr style="text-align:left;color:var(--muted);font-size:13px;">
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)">Título</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)">Cliques</th>
+                    <th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)">WhatsApp</th>
+                  </tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="adminList" class="admin-list"></div>
+  </div>
+</div>
+
+<!-- Descrição modal -->
+<div id="descOverlay" class="desc-overlay" aria-hidden="true">
+  <div class="desc-modal" role="dialog" aria-modal="true">
+    <h3>Descrição do anúncio</h3>
+    <div id="descText" class="desc-text"></div>
+    <div style="display:flex;justify-content:flex-end;">
+      <button id="descClose" class="desc-close">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase scripts -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<!-- ========== MAIN SCRIPT (inclui firebase, CRUD, reports, mobile) ========== -->
+<script>
+/* ---------- Firebase config (o que você enviou) ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDVMYIKRjjmePqfBTNHVfDY3dwXx-Esk5Y",
+  authDomain: "testeprojeto-6c8e7.firebaseapp.com",
+  databaseURL: "https://testeprojeto-6c8e7-default-rtdb.firebaseio.com",
+  projectId: "testeprojeto-6c8e7",
+  storageBucket: "testeprojeto-6c8e7.firebasestorage.app",
+  messagingSenderId: "442149935046",
+  appId: "1:442149935046:web:c63bd6677bf387bfed84c7"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const PATH_ADS = '/ads';
+const PATH_STATS = '/stats';
+const PATH_CONFIG = '/config/passwords';
+
+let ads = [];
+let statsCache = {};
+let configCache = { adminPass: '951951', announcePass: '951951' };
+
+/* DB helpers */
+function writeRef(path, value){ return db.ref(path).set(value); }
+function updateRef(path, value){ return db.ref(path).update(value); }
+function pushRef(path, value){ return db.ref(path).push(value); }
+function removeRef(path){ return db.ref(path).remove(); }
+function readOnce(path){ return db.ref(path).once('value').then(snap=>snap.val()); }
+
+/* Sync listeners */
+db.ref(PATH_ADS).on('value', snapshot => {
+  const val = snapshot.val() || {};
+  ads = Object.keys(val).map(k => Object.assign({ id: k, brand: '', model:'', year:0, km:'', price:'', description:'', phone:'', images:[], priceStyle:'blink', sold:false, createdAt:0 }, val[k]));
+  renderAds(); renderAdmin(); if(document.getElementById('reportsModal').style.display === 'flex') buildReports();
+});
+db.ref(PATH_STATS).on('value', snapshot => { statsCache = snapshot.val() || {}; if(document.getElementById('reportsModal').style.display === 'flex') buildReports(); });
+readOnce(PATH_CONFIG).then(v=>{ if(v) configCache = Object.assign(configCache, v); updateAdminPassLabel(); }).catch(()=>updateAdminPassLabel());
+db.ref(PATH_CONFIG).on('value', snap=>{ const v=snap.val(); if(v) configCache = Object.assign(configCache, v); updateAdminPassLabel(); });
+
+/* stats helpers */
+function incStat(adId, key){ if(!adId) return; db.ref(`${PATH_STATS}/${adId}`).transaction(current=>{ if(current===null) return { clicks: (key==='clicks'?1:0), whatsapp:(key==='whatsapp'?1:0), last: Date.now() }; current[key] = (current[key]||0)+1; current.last = Date.now(); return current; }); }
+function setStat(adId,key,value){ if(!adId) return; db.ref(`${PATH_STATS}/${adId}`).transaction(current=>{ if(current===null) current={clicks:0,whatsapp:0,last:Date.now()}; current[key]=value; current.last = Date.now(); return current; }); }
+
+/* save/delete */
+function saveAdToDb(adObj){ if(!adObj.createdAt) adObj.createdAt = Date.now(); return db.ref(`${PATH_ADS}/${adObj.id}`).set(adObj); }
+function deleteAdFromDb(adId){ const updates={}; updates[`${PATH_ADS}/${adId}`]=null; updates[`${PATH_STATS}/${adId}`]=null; return db.ref().update(updates); }
+
+/* UI references */
+const grid = document.getElementById('grid');
+const totalCount = document.getElementById('totalCount');
+const overlay = document.getElementById('overlay');
+const overlayAnnouncePass = document.getElementById('overlayAnnouncePass');
+const overlayPass = document.getElementById('overlayPass');
+const adForm = document.getElementById('adForm');
+const editingId = document.getElementById('editingId');
+const previewList = document.getElementById('previewList');
+
+function updateAdminPassLabel(){ document.getElementById('currentAdminPassLabel').textContent = 'oculta (alterável)'; }
+
+/* ---------- Render ads ---------- */
+function renderAds(){
+  grid.innerHTML=''; let count=0;
+  const q = (document.getElementById('searchInput').value||'').toLowerCase();
+  const brandF = (document.getElementById('filterBrand').value||'').toLowerCase();
+  const yearF = parseInt(document.getElementById('filterYearMin').value)||0;
+  const priceVal = document.getElementById('filterPrice').value || '';
+  const priceParts = priceVal.split('-').map(v=>parseInt(v)||0);
+  let normalAds=[], soldAds=[];
+  const sorted = ads.slice().sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
+  sorted.forEach(ad=> ad.sold ? soldAds.push(ad) : normalAds.push(ad));
+  const allAds = normalAds.concat(soldAds);
+  allAds.forEach(ad=>{
+    let ok=true;
+    if(!ad.sold){
+      if(q && !((ad.brand||'').toLowerCase().includes(q) || (ad.model||'').toLowerCase().includes(q) || (ad.description||'').toLowerCase().includes(q))) ok=false;
+      if(brandF && !((ad.brand||'').toLowerCase().includes(brandF))) ok=false;
+      if(yearF && (ad.year||0) < yearF) ok=false;
+      if(priceParts.length==2 && priceParts[0]!==0 && priceParts[1]!==0){
+        const p = parseInt((ad.price||'').toString().replace(/\D/g,''))||0;
+        if(p < priceParts[0] || p > priceParts[1]) ok=false;
+      }
+    }
+    if(ok){
+      count++;
+      const c=document.createElement('div'); c.className='card';
+      if(ad.sold) c.innerHTML+=`<div class="sold-badge">VENDIDO</div>`;
+      c.innerHTML+=`<div class="gallery"><img src="${ad.images && ad.images[0] ? ad.images[0] : ''}"></div>
+      <div class="meta"><div class="title">${(ad.brand||'') + ' ' + (ad.model||'')}</div><div class="specs">${ad.year||''} • ${ad.km||0} km</div></div>
+      <div class="price ${ad.priceStyle==='blink'?'blink':''}">${ad.price || ''}</div>
+      <div class="thumbs">${(ad.images||[]).map(i=>`<img src="${i}">`).join('')}</div>
+      <div class="actions">
+        <button class="whatsapp">WhatsApp</button>
+        <button class="desc-btn" data-adid="${ad.id}">Ver Descrição</button>
+      </div>`;
+      grid.appendChild(c);
+      c.querySelectorAll('.thumbs img').forEach(img=>{ img.addEventListener('click',()=>{ c.querySelector('.gallery img').src=img.src; incStat(ad.id,'clicks'); }); });
+      c.querySelector('.gallery').addEventListener('click',()=>{ incStat(ad.id,'clicks'); });
+      c.querySelector('.whatsapp').addEventListener('click',()=>{ incStat(ad.id,'whatsapp'); window.open('https://wa.me/'+(ad.phone||'5545999705577')); });
+      const descBtn = c.querySelector('.desc-btn');
+      if(descBtn){ descBtn.addEventListener('click',(e)=>{ e.stopPropagation(); openDescriptionModal(ad); incStat(ad.id,'clicks'); if(document.getElementById('reportsModal').style.display === 'flex') buildReports(); }); }
+    }
+  });
+  totalCount.textContent = count;
+}
+
+/* ========== Description modal ========== */
+const descOverlay = document.getElementById('descOverlay');
+const descText = document.getElementById('descText');
+const descClose = document.getElementById('descClose');
+function openDescriptionModal(ad){ descText.textContent = ad.description || 'Sem descrição.'; descOverlay.style.display='flex'; descOverlay.setAttribute('aria-hidden','false'); }
+descClose.addEventListener('click',()=>{ descOverlay.style.display='none'; descOverlay.setAttribute('aria-hidden','true'); });
+descOverlay.addEventListener('click',(e)=>{ if(e.target===descOverlay){ descOverlay.style.display='none'; descOverlay.setAttribute('aria-hidden','true'); } });
+
+/* ========== Admin rendering ========== */
+function renderAdmin(){
+  const adminList = document.getElementById('adminList'); adminList.innerHTML='';
+  const sorted = ads.slice().sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
+  sorted.forEach(ad=>{
+    const div=document.createElement('div'); div.className='admin-item';
+    div.innerHTML=`<img class="admin-thumb" src="${ad.images && ad.images[0] ? ad.images[0] : ''}">
+    <div class="admin-meta"><div><strong>${ad.brand||''} ${ad.model||''}</strong></div>
+    <div>${ad.year||''} • ${ad.km||0} km</div><div>${ad.price||''}</div></div>
+    <div class="admin-actions">
+      <button class="editBtn">Editar</button>
+      <button class="soldBtn" style="background:orange;color:#000">${ad.sold?'Ativar':'Vendido'}</button>
+      <button class="delBtn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)">Excluir</button>
+    </div>`;
+    adminList.appendChild(div);
+    div.querySelector('.editBtn').addEventListener('click',()=>openEdit(ad.id));
+    div.querySelector('.soldBtn').addEventListener('click',()=>{
+      const newSold = !ad.sold; const updated = Object.assign({},ad,{sold:newSold}); if(newSold) updated.createdAt = Date.now();
+      saveAdToDb(updated).then(()=>{});
+    });
+    div.querySelector('.delBtn').addEventListener('click',()=>{ if(confirm('Excluir anúncio?')) deleteAdFromDb(ad.id).then(()=>{}); });
+  });
+}
+
+/* ========== Create / Edit ========== */
+function openCreate(){ editingId.value=''; adForm.reset(); previewList.innerHTML=''; document.getElementById('modalTitle').textContent='Novo anúncio'; overlay.style.zIndex=250; overlay.style.display='flex'; }
+function openEdit(id){ const ad = ads.find(a=>a.id===id); if(!ad) return; editingId.value=id; document.getElementById('brand').value=ad.brand||''; document.getElementById('model').value=ad.model||''; document.getElementById('year').value=ad.year||''; document.getElementById('km').value=ad.km||''; document.getElementById('price').value=(ad.price||'').toString().replace(/\D/g,''); document.getElementById('description').value=ad.description||''; document.getElementById('phone').value=ad.phone||''; document.getElementById('priceStyle').value=ad.priceStyle||'blink'; previewList.innerHTML=''; (ad.images||[]).forEach(src=>{ const img=document.createElement('img'); img.src=src; previewList.appendChild(img); }); document.getElementById('modalTitle').textContent='Editar anúncio'; overlay.style.zIndex=250; overlay.style.display='flex'; }
+
+/* image input */
+document.getElementById('images').addEventListener('change',e=>{ previewList.innerHTML=''; Array.from(e.target.files).forEach(file=>{ const reader=new FileReader(); reader.onload=()=>{ const img=document.createElement('img'); img.src=reader.result; previewList.appendChild(img); }; reader.readAsDataURL(file); }); });
+
+/* submit ad */
+adForm.addEventListener('submit',e=>{ e.preventDefault(); const id = editingId.value || Date.now().toString(); const priceNumber = parseInt(document.getElementById('price').value) || 0; const priceFormatted = (priceNumber).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); const imagesFinal = Array.from(previewList.querySelectorAll('img')).map(i=>i.src); const existing = ads.find(a=>a.id==id); const adObj = { id, brand: document.getElementById('brand').value, model: document.getElementById('model').value, year: parseInt(document.getElementById('year').value)||0, km: document.getElementById('km').value, price: priceFormatted, description: document.getElementById('description').value, phone: document.getElementById('phone').value, images: imagesFinal, priceStyle: document.getElementById('priceStyle').value || 'blink', sold: existing ? !!existing.sold : false, createdAt: existing ? (existing.createdAt || Date.now()) : Date.now() }; saveAdToDb(adObj).then(()=>{ overlay.style.display='none'; if(!existing){ db.ref(`${PATH_STATS}/${id}`).set({ clicks:0, whatsapp:0, last: Date.now() }); } }).catch(err=>{ alert('Erro ao salvar anúncio: ' + (err && err.message ? err.message : err)); }); });
+
+/* modals & auth */
+document.getElementById('openCreate').addEventListener('click',()=>overlayAnnouncePass.style.display='flex');
+document.getElementById('closeAnnouncePass').addEventListener('click',()=>overlayAnnouncePass.style.display='none');
+document.getElementById('announcePassBtn').addEventListener('click',()=>{ const typed = document.getElementById('announcePassInput').value || ''; if(typed === (configCache.announcePass || '951951')){ overlayAnnouncePass.style.display='none'; openCreate(); } else alert('Senha incorreta!'); });
+document.getElementById('closeModal').addEventListener('click',()=>overlay.style.display='none');
+document.getElementById('btnViewAdmin').addEventListener('click',()=>overlayPass.style.display='flex');
+document.getElementById('closePass').addEventListener('click',()=>overlayPass.style.display='none');
+document.getElementById('unlockBtn').addEventListener('click',()=>{ const typed = document.getElementById('adminPassInput').value || ''; if(typed === (configCache.adminPass || '951951')){ overlayPass.style.display='none'; document.getElementById('adminPanel').style.display='block'; renderAdmin(); } else alert('Senha incorreta!'); });
+document.getElementById('adminCloseBtn').addEventListener('click',()=>document.getElementById('adminPanel').style.display='none');
+document.getElementById('adminCreateBtn').addEventListener('click',()=>openCreate());
+document.getElementById('searchInput').addEventListener('input',renderAds);
+document.getElementById('clearSearch').addEventListener('click',()=>{ document.getElementById('searchInput').value=''; renderAds(); });
+document.getElementById('applyFilters').addEventListener('click',renderAds);
+document.getElementById('resetFilters').addEventListener('click',()=>{ document.getElementById('filterBrand').value=''; document.getElementById('filterYearMin').value=''; document.getElementById('filterPrice').value=''; renderAds(); });
+
+/* change pass modals */
+document.getElementById('openChangeAdminPass').addEventListener('click',()=>document.getElementById('adminChangePassModal').style.display='flex');
+document.getElementById('closeChangeAdminPass').addEventListener('click',()=>document.getElementById('adminChangePassModal').style.display='none');
+document.getElementById('openChangeAnnouncePass').addEventListener('click',()=>document.getElementById('announceChangePassModal').style.display='flex');
+document.getElementById('closeChangeAnnouncePass').addEventListener('click',()=>document.getElementById('announceChangePassModal').style.display='none');
+
+document.getElementById('saveNewAdminPass').addEventListener('click',()=>{ const oldP=document.getElementById('oldAdminPass').value||''; const newP=document.getElementById('newAdminPass').value||''; const conf=document.getElementById('confirmNewAdminPass').value||''; if(oldP !== (configCache.adminPass || '951951')){ alert('Senha atual incorreta!'); return; } if(newP.length < 3){ alert('Nova senha precisa ter pelo menos 3 caracteres.'); return; } if(newP !== conf){ alert('As senhas não coincidem.'); return; } db.ref(PATH_CONFIG).update({ adminPass: newP }).then(()=>{ alert('Senha administrativa alterada!'); document.getElementById('adminChangePassModal').style.display='none'; }).catch(err=>{ alert('Erro ao salvar senha: '+ (err && err.message ? err.message : err)); }); });
+
+document.getElementById('saveNewAnnouncePass').addEventListener('click',()=>{ const oldP=document.getElementById('oldAnnouncePass').value||''; const newP=document.getElementById('newAnnouncePass').value||''; const conf=document.getElementById('confirmNewAnnouncePass').value||''; if(oldP !== (configCache.announcePass || '951951')){ alert('Senha atual incorreta!'); return; } if(newP.length < 3){ alert('Nova senha precisa ter pelo menos 3 caracteres.'); return; } if(newP !== conf){ alert('As senhas não coincidem.'); return; } db.ref(PATH_CONFIG).update({ announcePass: newP }).then(()=>{ alert('Senha para anunciar alterada!'); document.getElementById('announceChangePassModal').style.display='none'; }).catch(err=>{ alert('Erro ao salvar senha: '+ (err && err.message ? err.message : err)); }); });
+
+/* click outside to close overlays */
+document.querySelectorAll('.overlay').forEach(o=>{ o.addEventListener('click',(e)=>{ if(e.target === o) o.style.display='none'; }); });
+
+/* reports */
+function buildReports(){
+  const stats = statsCache || {};
+  const activeAds = ads.filter(a=>!a.sold);
+  const rows = activeAds.map(a=>{ const s = stats[a.id] || { clicks:0, whatsapp:0, last:0 }; return { id: a.id, title: (a.brand||'') + ' ' + (a.model||''), clicks: s.clicks||0, whatsapp: s.whatsapp||0, last: s.last||0 }; });
+
+  const sortedByClicksDesc = rows.slice().sort((a,b)=>b.clicks - a.clicks);
+  const sortedByClicksAsc = rows.slice().sort((a,b)=>a.clicks - b.clicks);
+
+  const mostClicked = sortedByClicksDesc[0] || null;
+  const leastClicked = sortedByClicksAsc[0] || null;
+  const totalWhats = rows.reduce((s,r)=>s + r.whatsapp,0);
+  const flopados = rows.filter(r=>r.clicks===0);
+  const populares = rows.filter(r=>r.clicks === (mostClicked ? mostClicked.clicks : 0) && r.clicks>0);
+
+  const summary = document.getElementById('reportSummary');
+  summary.innerHTML = '';
+  function mkBox(title, content){ const d=document.createElement('div'); d.className='report-box'; d.innerHTML = `<strong style="display:block;margin-bottom:6px">${title}</strong>${content}`; return d; }
+
+  summary.appendChild(mkBox('Mais clicado', mostClicked ? `<div>${mostClicked.title} — ${mostClicked.clicks} cliques</div>` : 'Nenhum'));
+  summary.appendChild(mkBox('Menos clicado', leastClicked ? `<div>${leastClicked.title} — ${leastClicked.clicks} cliques</div>` : 'Nenhum'));
+  summary.appendChild(mkBox('Chamou WhatsApp (total)', `<div>${totalWhats} chamadas</div>`));
+  summary.appendChild(mkBox('Flopados (0 cliques)', `<div>${flopados.length} anúncio(s)</div>`));
+  summary.appendChild(mkBox('Populares (empate)', `<div>${populares.length} anúncio(s)</div>`));
+
+  const tbody = document.getElementById('reportTableBody'); tbody.innerHTML='';
+  rows.sort((a,b)=>b.clicks - a.clicks).forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)">${r.title}</td>
+                    <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)">${r.clicks}</td>
+                    <td style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.03)">${r.whatsapp}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  drawChart(rows);
+}
+
+function drawChart(rows){
+  const canvas = document.getElementById('reportChart'); if(!canvas) return;
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!rows || rows.length===0){ ctx.fillStyle='#bdbdbd'; ctx.font='16px Arial'; ctx.fillText('Nenhum anúncio ativo para mostrar no relatório.',20,50); return; }
+  const data = rows.slice().sort((a,b)=>b.clicks - a.clicks).slice(0,10);
+  const labels = data.map(d=>d.title); const values = data.map(d=>d.clicks);
+  const paddingLeft = 180, paddingRight = 20, paddingTop = 20, paddingBottom = 40;
+  const w = canvas.width, h = canvas.height, chartW = w - paddingLeft - paddingRight, chartH = h - paddingTop - paddingBottom;
+  ctx.fillStyle = '#071018'; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle = '#fff'; ctx.font = '13px Arial';
+  const barHeight = Math.floor(chartH / data.length) - 12; const maxVal = Math.max(...values,1);
+  for(let i=0;i<data.length;i++){
+    const y = paddingTop + i * (barHeight + 12);
+    let lab = labels[i]; if(lab.length > 28) lab = lab.substring(0,25)+'...';
+    ctx.fillStyle = '#bdbdbd'; ctx.fillText(lab, 12, y + barHeight/1.5);
+    const barW = (values[i] / maxVal) * chartW;
+    ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(paddingLeft, y, chartW, barHeight);
+    ctx.fillStyle = '#ffd400'; ctx.fillRect(paddingLeft, y, barW, barHeight);
+    ctx.fillStyle = '#fff'; ctx.font = '12px Arial';
+    const valText = values[i].toString(); const txtX = paddingLeft + Math.min(barW + 8, chartW + 6);
+    ctx.fillText(valText, txtX, y + barHeight/1.5);
+    ctx.font = '13px Arial';
+  }
+  ctx.fillStyle='#fff'; ctx.font='16px Arial'; ctx.fillText('Top anúncios por cliques (não vendidos)', paddingLeft, 14);
+}
+
+/* export pdf */
+document.getElementById('downloadPdfBtn').addEventListener('click',()=>{
+  const stats = statsCache || {};
+  const activeAds = ads.filter(a=>!a.sold);
+  const rows = activeAds.map(a=>{ const s = stats[a.id] || { clicks:0, whatsapp:0, last:0 }; return { id:a.id, title:(a.brand||'')+' '+(a.model||''), clicks:s.clicks||0, whatsapp:s.whatsapp||0, last:s.last||0 }; }).sort((a,b)=>b.clicks - a.clicks);
+  const canvas = document.getElementById('reportChart'); const imgData = canvas ? canvas.toDataURL() : '';
+  let html = `<html><head><title>Relatório - Woody Car</title><style>body{background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;padding:20px;}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd;text-align:left}</style></head><body><h1>Relatório - Woody Car</h1><p>Gerado em: ${new Date().toLocaleString()}</p><h2>Gráfico — Top anúncios por cliques (não vendidos)</h2><img src="${imgData}" style="max-width:100%;height:auto;border:1px solid #ccc;padding:6px;background:#fff" /><h2>Tabela de estatísticas</h2><table><thead><tr><th>Título</th><th>Cliques</th><th>WhatsApp</th></tr></thead><tbody>`;
+  rows.forEach(r=>{ html += `<tr><td>${escapeHtml(r.title)}</td><td>${r.clicks}</td><td>${r.whatsapp}</td></tr>`; });
+  html += `</tbody></table><p style="margin-top:20px;color:#666">Observação: anúncios marcados como "Vendido" não aparecem neste relatório.</p></body></html>`;
+  const w = window.open('','_blank'); w.document.write(html); w.document.close(); setTimeout(()=>{ w.focus(); w.print(); },500);
+});
+function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* init */
+renderAds();
+
+/* mobile: hamburger toggle + map mobile buttons to desktop actions */
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+hamburger.addEventListener('click', (e)=>{ e.stopPropagation(); mobileMenu.classList.toggle('active'); mobileMenu.setAttribute('aria-hidden', mobileMenu.classList.contains('active') ? 'false' : 'true'); });
+document.addEventListener('click', (e)=>{ if(!mobileMenu.contains(e.target) && !hamburger.contains(e.target)){ mobileMenu.classList.remove('active'); mobileMenu.setAttribute('aria-hidden','true'); }});
+
+/* map mobile buttons to existing actions (safer than duplicate IDs) */
+document.getElementById('btnViewAdmin_m').addEventListener('click', ()=>{ mobileMenu.classList.remove('active'); document.getElementById('btnViewAdmin').click(); });
+document.getElementById('openCreate_m').addEventListener('click', ()=>{ mobileMenu.classList.remove('active'); document.getElementById('openCreate').click(); });
+document.getElementById('findVehicleBtn_m').addEventListener('click', ()=>{ mobileMenu.classList.remove('active'); document.getElementById('findVehicleBtn').click(); });
+document.getElementById('sellVehicleBtn_m').addEventListener('click', ()=>{ mobileMenu.classList.remove('active'); document.getElementById('sellVehicleBtn').click(); });
+
+/* find/sell modals wiring */
+document.getElementById('closeFindVehicle').addEventListener('click',()=>document.getElementById('overlayFindVehicle').style.display='none');
+document.getElementById('closeSellVehicle').addEventListener('click',()=>document.getElementById('overlaySellVehicle').style.display='none');
+document.getElementById('findVehicleBtn').addEventListener('click',()=>document.getElementById('overlayFindVehicle').style.display='flex');
+document.getElementById('sellVehicleBtn').addEventListener('click',()=>document.getElementById('overlaySellVehicle').style.display='flex');
+document.getElementById('sendFindVehicle').addEventListener('click',()=>{
+  const brand=document.getElementById('findBrand').value; const model=document.getElementById('findModel').value; const year=document.getElementById('findYear').value; const details=document.getElementById('findDetails').value; const phone='5545999705577';
+  const msg=`Olá, estou procurando um veículo específico:\nMarca: ${brand}\nModelo: ${model}\nAno: ${year}\nDetalhes: ${details}`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank'); document.getElementById('overlayFindVehicle').style.display='none';
+});
+document.getElementById('sendSellVehicle').addEventListener('click',()=>{
+  const brand=document.getElementById('sellBrand').value; const model=document.getElementById('sellModel').value; const year=document.getElementById('sellYear').value; const km=document.getElementById('sellKm').value; const phone='5545999705577';
+  const msg=`Olá, quero vender meu veículo:\nMarca: ${brand}\nModelo: ${model}\nAno: ${year}\nKM: ${km}`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank'); document.getElementById('overlaySellVehicle').style.display='none';
+});
+
+/* ensure reports update when admin list redraws */
+const originalRenderAdmin = renderAdmin;
+renderAdmin = function(){ originalRenderAdmin(); if(document.getElementById('reportsModal').style.display === 'flex') buildReports(); };
+</script>
+
+</body>
+</html>
